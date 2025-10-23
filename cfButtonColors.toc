@@ -1,0 +1,12 @@
+## Interface: 11508
+## Title:     cfButtonColors
+## Notes:     Colors action buttons by range (red) and mana (blue)
+## Author:    Cowfoot
+## Version:   1.0
+
+# Core module (must load first)
+Core.lua
+
+# Domain modules
+Modules\PetActions.lua
+Modules\PlayerActions.lua
