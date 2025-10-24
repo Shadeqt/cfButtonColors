@@ -1,18 +1,18 @@
 local addon = cfButtonColors
 local applyButtonColor = addon.applyButtonColor
 
--- Localize for performance
-local ActionHasRange = ActionHasRange
-local IsUsableAction = IsUsableAction
-local IsActionInRange = IsActionInRange
+-- Localized API calls
+local _ActionHasRange = ActionHasRange
+local _IsUsableAction = IsUsableAction
+local _IsActionInRange = IsActionInRange
 
 -- Update color for player action button based on current state
 local function updatePlayerActionButtonColor(button)
 	local action = button.action
-	if not ActionHasRange(action) then return end
+	if not _ActionHasRange(action) then return end
 
-	local _, isOutOfMana = IsUsableAction(action)
-	local isOutOfRange = IsActionInRange(action) == false
+	local _, isOutOfMana = _IsUsableAction(action)
+	local isOutOfRange = _IsActionInRange(action) == false
 
 	applyButtonColor(button.icon, isOutOfMana, isOutOfRange)
 end
