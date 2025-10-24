@@ -1,7 +1,7 @@
 local addon = cfButtonColors
 local applyButtonColor = addon.applyButtonColor
 
--- Localized API calls
+-- WoW API calls
 local _GetPetActionInfo = GetPetActionInfo
 local _PetHasActionBar = PetHasActionBar
 local _UnitClass = UnitClass
