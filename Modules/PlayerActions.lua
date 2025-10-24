@@ -9,6 +9,25 @@ local _ActionHasRange = ActionHasRange
 local _IsUsableAction = IsUsableAction
 local _IsActionInRange = IsActionInRange
 
+-- State cache to prevent redundant SetVertexColor calls
+local iconStates = {}
+
+-- Color state constants for comparison
+local STATE_OUT_OF_MANA = 1
+local STATE_OUT_OF_RANGE = 2
+local STATE_NORMAL = 3
+
+-- Determine color state based on mana and range
+local function getColorState(isOutOfMana, isOutOfRange)
+	if isOutOfMana then
+		return STATE_OUT_OF_MANA
+	elseif isOutOfRange then
+		return STATE_OUT_OF_RANGE
+	else
+		return STATE_NORMAL
+	end
+end
+
 -- Watched buttons tracking: only buttons with range indicators
 local watchedButtons = {}
 
@@ -40,6 +59,17 @@ local function updatePlayerActionButtonColor(button)
 	local action = button.action
 	local _, isOutOfMana = _IsUsableAction(action)
 	local isOutOfRange = _IsActionInRange(action) == false
+
+	-- Determine new state
+	local newState = getColorState(isOutOfMana, isOutOfRange)
+
+	-- Early exit if state unchanged (optimization: prevents redundant texture operations)
+	if iconStates[button.icon] == newState then
+		return
+	end
+
+	-- Update cached state
+	iconStates[button.icon] = newState
 
 	applyButtonColor(button.icon, isOutOfMana, isOutOfRange)
 end
