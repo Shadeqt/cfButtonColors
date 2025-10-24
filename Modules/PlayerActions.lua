@@ -1,6 +1,9 @@
 local addon = cfButtonColors
 local applyButtonColor = addon.applyButtonColor
 
+-- Lua built-ins
+local hooksecurefunc = hooksecurefunc
+
 -- WoW API calls
 local _ActionHasRange = ActionHasRange
 local _IsUsableAction = IsUsableAction

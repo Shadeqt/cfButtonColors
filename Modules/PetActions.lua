@@ -1,6 +1,10 @@
 local addon = cfButtonColors
 local applyButtonColor = addon.applyButtonColor
 
+-- Lua built-ins
+local select = select
+local hooksecurefunc = hooksecurefunc
+
 -- WoW API calls
 local _GetPetActionInfo = GetPetActionInfo
 local _PetHasActionBar = PetHasActionBar
