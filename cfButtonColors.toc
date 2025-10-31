@@ -1,0 +1,7 @@
+## Interface: 11503
+## Title: cfButtonColors
+## Notes: Simple action bar coloring for pet and player buttons
+## Version: 1.0
+## Author: cfButtonColors
+
+cfButtonColors.lua
