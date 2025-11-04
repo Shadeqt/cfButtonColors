@@ -22,24 +22,26 @@ local function applyButtonColor(icon, isOutOfMana, isOutOfRange, isUnusable)
 end
 
 local function updatePlayerButton(button)
-	if button and button.action and HasAction(button.action) then
-		local isUsable, isOutOfMana = IsUsableAction(button.action)
-		local isInRange = IsActionInRange(button.action)
-		local isOutOfRange = isInRange == false
-		local isUnusable = not isUsable and not isOutOfMana
-		applyButtonColor(button.icon, isOutOfMana, isOutOfRange, isUnusable)
-	end
+    if not button.action then return end
+    if not HasAction(button.action) then return end
+    
+    local isUsable, isOutOfMana = IsUsableAction(button.action)
+    local isInRange = IsActionInRange(button.action)
+    local isOutOfRange = (isInRange == false or isInRange == 0)
+    local isUnusable = not isUsable and not isOutOfMana
+    applyButtonColor(button.icon, isOutOfMana, isOutOfRange, isUnusable)
 end
 
 local function updatePetButtons()
 	if not PetHasActionBar() then return end
+
 	for i = 1, NUM_PET_ACTION_SLOTS do
 		local button = petButtons[i]
 		if button and button.icon then
 			local _, _, _, _, _, _, spellId, hasRangeCheck, isInRange = GetPetActionInfo(i)
 			if spellId then
 				local isUsable, isOutOfMana = C_Spell.IsSpellUsable(spellId)
-				local isOutOfRange = hasRangeCheck and not isInRange
+				local isOutOfRange = hasRangeCheck and (isInRange == false or isInRange == 0)
 				local isUnusable = not isUsable and not isOutOfMana
 				applyButtonColor(button.icon, isOutOfMana, isOutOfRange, isUnusable)
 			end
