@@ -10,9 +10,9 @@ addon.isPetClass = isPetClass
 -- SavedVariables initialization
 if not cfButtonColorsDB then
     cfButtonColorsDB = {
-        showManaColor = true,
-        showRangeColor = true,
-        enablePetButtons = isPetClass,
+        enablePlayerMana = true,
+        enablePlayerRange = true,
+        enablePet = isPetClass,
     }
 end
 

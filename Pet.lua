@@ -1,5 +1,9 @@
 local addon = cfButtonColors
 
+-- Module enable checks
+if not addon.isPetClass then return end
+if not cfButtonColorsDB.enablePet then return end
+
 -- Module constants
 local NUM_PET_ACTION_SLOTS = NUM_PET_ACTION_SLOTS
 
@@ -21,13 +25,11 @@ local function updatePetButtons()
 	end
 end
 
--- Hook: PetActionBar_Update and timer (conditional on class and config)
-if addon.isPetClass and cfButtonColorsDB.enablePetButtons then
-	hooksecurefunc("PetActionBar_Update", updatePetButtons)
+-- Hook: PetActionBar_Update and timer
+hooksecurefunc("PetActionBar_Update", updatePetButtons)
 
-	C_Timer.NewTicker(0.2, function()
-		if PetHasActionBar() and (UnitExists("target") or InCombatLockdown()) then
-			updatePetButtons()
-		end
-	end)
-end
+C_Timer.NewTicker(0.2, function()
+	if PetHasActionBar() and (UnitExists("target") or InCombatLockdown()) then
+		updatePetButtons()
+	end
+end)
