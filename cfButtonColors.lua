@@ -13,6 +13,9 @@ if not cfButtonColorsDB then
         enablePlayerMana = true,
         enablePlayerRange = true,
         enablePet = isPetClass,
+        manaColor = {r = 0.1, g = 0.3, b = 1.0},
+        rangeColor = {r = 1.0, g = 0.3, b = 0.1},
+        unusableColor = {r = 0.4, g = 0.4, b = 0.4},
     }
 end
 
@@ -35,11 +38,14 @@ end
 -- Applies color to button icon based on state priority (mana > range > unusable)
 function addon.applyButtonColor(icon, isOutOfMana, isOutOfRange, isUnusable)
 	if isOutOfMana then
-		icon:SetVertexColor(0.1, 0.3, 1.0)
+		local c = cfButtonColorsDB.manaColor
+		icon:SetVertexColor(c.r, c.g, c.b)
 	elseif isOutOfRange then
-		icon:SetVertexColor(1.0, 0.3, 0.1)
+		local c = cfButtonColorsDB.rangeColor
+		icon:SetVertexColor(c.r, c.g, c.b)
 	elseif isUnusable then
-		icon:SetVertexColor(0.4, 0.4, 0.4)
+		local c = cfButtonColorsDB.unusableColor
+		icon:SetVertexColor(c.r, c.g, c.b)
 	else
 		icon:SetVertexColor(1.0, 1.0, 1.0)
 	end
