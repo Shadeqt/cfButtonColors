@@ -3,6 +3,10 @@
 ## Notes:     Colors player and pet action bar buttons when out of range or insufficient mana
 ## Author:    Cowfoot
 ## Version:   1.0
+## SavedVariables: cfButtonColorsDB
 
-# Core module
+# Core module (load order matters)
 cfButtonColors.lua
+Player.lua
+Pet.lua
+Interface.lua
