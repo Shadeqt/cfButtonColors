@@ -2,6 +2,9 @@
 local panel = CreateFrame("Frame", "cfButtonColorsPanel")
 panel.name = "cfButtonColors"
 
+-- Addon namespace reference
+local addon = cfButtonColors
+
 -- Pending state (created fresh on panel open)
 local pendingState = nil
 
@@ -67,47 +70,39 @@ local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 16, -16)
 title:SetText("cfButtonColors Settings")
 
--- Checkbox: Mana coloring
-local manaCheck = CreateFrame("CheckButton", nil, panel, "InterfaceOptionsCheckButtonTemplate")
-manaCheck:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -16)
-manaCheck.Text:SetText("Enable Mana/Usability Coloring (Blue for mana, Grey for unusable)")
-manaCheck:SetScript("OnClick", function(self)
-	pendingState.enablePlayerMana = self:GetChecked()
-end)
+-- Helper function to create a checkbox
+local function createCheckbox(parent, anchorTo, xOffset, yOffset, moduleName, labelText)
+	local check = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
+	check:SetPoint("TOPLEFT", anchorTo, "BOTTOMLEFT", xOffset, yOffset)
+	check.Text:SetText(labelText)
+	check.moduleName = moduleName -- Store module name for DB access
 
--- Checkbox: Range coloring
-local rangeCheck = CreateFrame("CheckButton", nil, panel, "InterfaceOptionsCheckButtonTemplate")
-rangeCheck:SetPoint("TOPLEFT", manaCheck, "BOTTOMLEFT", 0, -8)
-rangeCheck.Text:SetText("Enable Range Coloring (Red when out of range)")
-rangeCheck:SetScript("OnClick", function(self)
-	pendingState.enablePlayerRange = self:GetChecked()
-end)
+	-- OnClick handler will be set during initialization
+	return check
+end
 
--- Checkbox: Pet button coloring
-local petCheck = CreateFrame("CheckButton", nil, panel, "InterfaceOptionsCheckButtonTemplate")
-petCheck:SetPoint("TOPLEFT", rangeCheck, "BOTTOMLEFT", 0, -8)
-petCheck.Text:SetText("Enable Pet Button Coloring")
-petCheck:SetScript("OnClick", function(self)
-	pendingState.enablePet = self:GetChecked()
-end)
+-- Store all checkboxes for later initialization
+local allCheckboxes = {}
+
+-- Checkboxes
+allCheckboxes.manaCheck = createCheckbox(panel, title, 0, -16, "PlayerMana", "Player Actionbar Mana/Usability (Blue for mana, Grey for unusable)")
+allCheckboxes.rangeCheck = createCheckbox(panel, allCheckboxes.manaCheck, 0, -8, "PlayerRange", "Player Actionbar Range (Red when out of range)")
+allCheckboxes.petCheck = createCheckbox(panel, allCheckboxes.rangeCheck, 0, -8, "Pet", "Pet Actionbar Range/Mana")
 
 local petNote = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-petNote:SetPoint("LEFT", petCheck.Text, "RIGHT", 8, 0)
+petNote:SetPoint("LEFT", allCheckboxes.petCheck.Text, "RIGHT", 8, 0)
 petNote:SetText("(only affects |cffAAD372Hunter|r and |cff9382C9Warlock|r)")
 
 -- Reload UI button and warning text
 local reloadBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-reloadBtn:SetPoint("TOPLEFT", petCheck, "BOTTOMLEFT", 0, -16)
+reloadBtn:SetPoint("TOPLEFT", allCheckboxes.petCheck, "BOTTOMLEFT", 0, -16)
 reloadBtn:SetSize(120, 25)
 reloadBtn:SetText("Reload UI")
 reloadBtn:SetScript("OnClick", function()
 	-- Commit pending changes to database
-	cfButtonColorsDB.enablePlayerMana = pendingState.enablePlayerMana
-	cfButtonColorsDB.enablePlayerRange = pendingState.enablePlayerRange
-	cfButtonColorsDB.enablePet = pendingState.enablePet
-	cfButtonColorsDB.manaColor = {r = pendingState.manaColor.r, g = pendingState.manaColor.g, b = pendingState.manaColor.b}
-	cfButtonColorsDB.rangeColor = {r = pendingState.rangeColor.r, g = pendingState.rangeColor.g, b = pendingState.rangeColor.b}
-	cfButtonColorsDB.unusableColor = {r = pendingState.unusableColor.r, g = pendingState.unusableColor.g, b = pendingState.unusableColor.b}
+	for key, value in pairs(pendingState) do
+		cfButtonColorsDB[key] = value
+	end
 	ReloadUI()
 end)
 
@@ -160,18 +155,33 @@ info:SetText("Type |cffFFFF00/cfbc|r to open this panel")
 local function initializeCheckboxes()
 	-- Copy database to pending state
 	pendingState = {
-		enablePlayerMana = cfButtonColorsDB.enablePlayerMana,
-		enablePlayerRange = cfButtonColorsDB.enablePlayerRange,
-		enablePet = cfButtonColorsDB.enablePet,
+		PlayerMana = cfButtonColorsDB.PlayerMana,
+		PlayerRange = cfButtonColorsDB.PlayerRange,
+		Pet = cfButtonColorsDB.Pet,
 		manaColor = {r = cfButtonColorsDB.manaColor.r, g = cfButtonColorsDB.manaColor.g, b = cfButtonColorsDB.manaColor.b},
 		rangeColor = {r = cfButtonColorsDB.rangeColor.r, g = cfButtonColorsDB.rangeColor.g, b = cfButtonColorsDB.rangeColor.b},
 		unusableColor = {r = cfButtonColorsDB.unusableColor.r, g = cfButtonColorsDB.unusableColor.g, b = cfButtonColorsDB.unusableColor.b},
 	}
 
-	-- Set checkboxes from pending state
-	manaCheck:SetChecked(pendingState.enablePlayerMana)
-	rangeCheck:SetChecked(pendingState.enablePlayerRange)
-	petCheck:SetChecked(pendingState.enablePet)
+	-- Configure each checkbox
+	for _, check in pairs(allCheckboxes) do
+		-- Special handling for Pet checkbox (class restriction)
+		if check.moduleName == "Pet" and not addon.isPetClass then
+			-- Non-pet class: disable checkbox and gray out text
+			check:SetChecked(false)
+			check:Disable()
+			check.Text:SetTextColor(0.5, 0.5, 0.5)
+		else
+			-- Normal handling: set checked state and enable
+			check:SetChecked(pendingState[check.moduleName])
+			check:Enable()
+
+			-- Set OnClick handler
+			check:SetScript("OnClick", function(self)
+				pendingState[self.moduleName] = self:GetChecked()
+			end)
+		end
+	end
 
 	-- Set color picker button colors
 	manaColorBtn.colorTexture:SetColorTexture(pendingState.manaColor.r, pendingState.manaColor.g, pendingState.manaColor.b)
@@ -179,8 +189,10 @@ local function initializeCheckboxes()
 	unusableColorBtn.colorTexture:SetColorTexture(pendingState.unusableColor.r, pendingState.unusableColor.g, pendingState.unusableColor.b)
 end
 
--- Initialize immediately (fixes OnShow not firing on first open)
-initializeCheckboxes()
+-- Don't initialize immediately - wait for all addons to load
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:SetScript("OnEvent", initializeCheckboxes)
 
 -- OnShow: Refresh checkboxes from database
 panel:SetScript("OnShow", initializeCheckboxes)

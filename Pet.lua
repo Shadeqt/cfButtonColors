@@ -2,7 +2,7 @@ local addon = cfButtonColors
 
 -- Module enable checks
 if not addon.isPetClass then return end
-if not cfButtonColorsDB.enablePet then return end
+if not cfButtonColorsDB.Pet then return end
 
 -- Module constants
 local NUM_PET_ACTION_SLOTS = NUM_PET_ACTION_SLOTS

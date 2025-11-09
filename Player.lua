@@ -26,11 +26,11 @@ local function updatePlayerButtonRange(button)
 end
 
 -- Hook: ActionButton_UpdateUsable (conditional on config)
-if cfButtonColorsDB.enablePlayerMana then
+if cfButtonColorsDB.PlayerMana then
 	hooksecurefunc("ActionButton_UpdateUsable", updatePlayerButtonUsable)
 end
 
 -- Hook: ActionButton_UpdateRangeIndicator (conditional on config)
-if cfButtonColorsDB.enablePlayerRange then
+if cfButtonColorsDB.PlayerRange then
 	hooksecurefunc("ActionButton_UpdateRangeIndicator", updatePlayerButtonRange)
 end
