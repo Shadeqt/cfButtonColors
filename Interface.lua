@@ -1,16 +1,6 @@
--- Lua API
-local pairs = pairs
-
--- WoW API
-local CreateFrame = CreateFrame
-local ReloadUI = ReloadUI
-local ColorPickerFrame = ColorPickerFrame
-local Settings = Settings
-
--- Module Constants
+-- Localize for performance and consistency
+local db = cfButtonColorsDB
 local addon = cfButtonColors
-local MODULES = addon.MODULES
-local defaultColors = addon.DEFAULT_COLORS
 
 -- Module-level state
 local pendingState = nil
@@ -32,9 +22,9 @@ local function createResetButton(colorButton, colorKey, xOffset)
 	resetBtn:SetPoint("LEFT", colorButton, "RIGHT", xOffset, 0)
 	resetBtn:SetText("Reset")
 	resetBtn:SetScript("OnClick", function()
-		local default = defaultColors[colorKey]
+		local default = addon.DEFAULT_COLORS[colorKey]
 		pendingState[colorKey] = {r = default.r, g = default.g, b = default.b}
-		cfButtonColorsDB[colorKey] = {r = default.r, g = default.g, b = default.b}
+		db[colorKey] = {r = default.r, g = default.g, b = default.b}
 		colorButton.colorTexture:SetColorTexture(default.r, default.g, default.b)
 	end)
 	return resetBtn
@@ -70,7 +60,7 @@ local function createColorButton(parent, label, colorKey, yOffset)
 		local function updateColor()
 			local r, g, b = ColorPickerFrame:GetColorRGB()
 			pendingState[colorKey] = {r = r, g = g, b = b}
-			cfButtonColorsDB[colorKey] = {r = r, g = g, b = b}
+			db[colorKey] = {r = r, g = g, b = b}
 			button.colorTexture:SetColorTexture(r, g, b)
 		end
 
@@ -79,7 +69,7 @@ local function createColorButton(parent, label, colorKey, yOffset)
 		ColorPickerFrame.cancelFunc = function()
 			local c = currentColor
 			pendingState[colorKey] = {r = c.r, g = c.g, b = c.b}
-			cfButtonColorsDB[colorKey] = {r = c.r, g = c.g, b = c.b}
+			db[colorKey] = {r = c.r, g = c.g, b = c.b}
 			button.colorTexture:SetColorTexture(c.r, c.g, c.b)
 		end
 		ColorPickerFrame.hasOpacity = false
@@ -104,9 +94,9 @@ end
 
 -- UI Element Creation
 -- Checkboxes
-allCheckboxes.manaCheck = createCheckbox(panel, title, 0, -16, MODULES.PLAYER_MANA, "Player Actionbar Mana/Usability (Blue for mana, Grey for unusable)")
-allCheckboxes.rangeCheck = createCheckbox(panel, allCheckboxes.manaCheck, 0, -8, MODULES.PLAYER_RANGE, "Player Actionbar Range (Red when out of range)")
-allCheckboxes.petCheck = createCheckbox(panel, allCheckboxes.rangeCheck, 0, -8, MODULES.PET, "Pet Actionbar Range/Mana")
+allCheckboxes.manaCheck = createCheckbox(panel, title, 0, -16, addon.MODULES.PLAYER_MANA, "Player Actionbar Mana/Usability (Blue for mana, Grey for unusable)")
+allCheckboxes.rangeCheck = createCheckbox(panel, allCheckboxes.manaCheck, 0, -8, addon.MODULES.PLAYER_RANGE, "Player Actionbar Range (Red when out of range)")
+allCheckboxes.petCheck = createCheckbox(panel, allCheckboxes.rangeCheck, 0, -8, addon.MODULES.PET, "Pet Actionbar Range/Mana")
 
 local petNote = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 petNote:SetPoint("LEFT", allCheckboxes.petCheck.Text, "RIGHT", 8, 0)
@@ -120,7 +110,7 @@ reloadBtn:SetText("Reload UI")
 reloadBtn:SetScript("OnClick", function()
 	-- Commit pending changes to database
 	for key, value in pairs(pendingState) do
-		cfButtonColorsDB[key] = value
+		db[key] = value
 	end
 	ReloadUI()
 end)
@@ -148,18 +138,18 @@ info:SetText("Type |cffFFFF00/cfbc|r to open this panel")
 local function initializeCheckboxes()
 	-- Copy database to pending state
 	pendingState = {
-		[MODULES.PLAYER_MANA] = cfButtonColorsDB[MODULES.PLAYER_MANA],
-		[MODULES.PLAYER_RANGE] = cfButtonColorsDB[MODULES.PLAYER_RANGE],
-		[MODULES.PET] = cfButtonColorsDB[MODULES.PET],
-		manaColor = {r = cfButtonColorsDB.manaColor.r, g = cfButtonColorsDB.manaColor.g, b = cfButtonColorsDB.manaColor.b},
-		rangeColor = {r = cfButtonColorsDB.rangeColor.r, g = cfButtonColorsDB.rangeColor.g, b = cfButtonColorsDB.rangeColor.b},
-		unusableColor = {r = cfButtonColorsDB.unusableColor.r, g = cfButtonColorsDB.unusableColor.g, b = cfButtonColorsDB.unusableColor.b},
+		[addon.MODULES.PLAYER_MANA] = db[addon.MODULES.PLAYER_MANA],
+		[addon.MODULES.PLAYER_RANGE] = db[addon.MODULES.PLAYER_RANGE],
+		[addon.MODULES.PET] = db[addon.MODULES.PET],
+		manaColor = {r = db.manaColor.r, g = db.manaColor.g, b = db.manaColor.b},
+		rangeColor = {r = db.rangeColor.r, g = db.rangeColor.g, b = db.rangeColor.b},
+		unusableColor = {r = db.unusableColor.r, g = db.unusableColor.g, b = db.unusableColor.b},
 	}
 
 	-- Configure each checkbox
 	for _, check in pairs(allCheckboxes) do
 		-- Special handling for Pet checkbox (class restriction)
-		if check.moduleName == MODULES.PET and not addon.isPetClass then
+		if check.moduleName == addon.MODULES.PET and not addon.isPetClass then
 			-- Non-pet class: disable checkbox and gray out text
 			check:SetChecked(false)
 			check:Disable()

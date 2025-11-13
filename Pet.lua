@@ -1,22 +1,12 @@
--- WoW API
-local PetHasActionBar = PetHasActionBar
-local GetPetActionInfo = GetPetActionInfo
-local C_Spell = C_Spell
-local hooksecurefunc = hooksecurefunc
-local C_Timer = C_Timer
-local UnitExists = UnitExists
-local InCombatLockdown = InCombatLockdown
-local _G = _G
-
--- WoW Constants
-local NUM_PET_ACTION_SLOTS = NUM_PET_ACTION_SLOTS
-
--- Module Constants
+-- Localize for performance and consistency
+local db = cfButtonColorsDB
 local addon = cfButtonColors
-local MODULES = addon.MODULES
 
 -- Initialization code
-if not cfButtonColorsDB[MODULES.PET] then return end
+if not db[addon.MODULES.PET] then return end
+
+-- WoW constants
+local NUM_PET_ACTION_SLOTS = NUM_PET_ACTION_SLOTS -- 10, number of pet action buttons
 
 -- Functions
 -- Updates all pet button colors based on mana, range, and usability

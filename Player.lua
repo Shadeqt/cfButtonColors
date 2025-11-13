@@ -1,12 +1,6 @@
--- WoW API
-local HasAction = HasAction
-local IsUsableAction = IsUsableAction
-local IsActionInRange = IsActionInRange
-local hooksecurefunc = hooksecurefunc
-
--- Module Constants
+-- Localize for performance and consistency
+local db = cfButtonColorsDB
 local addon = cfButtonColors
-local MODULES = addon.MODULES
 
 -- Functions
 -- Updates button color based on mana/usability state
@@ -36,11 +30,11 @@ end
 
 -- Event Handlers / Hooks
 -- Hook: ActionButton_UpdateUsable (conditional on config)
-if cfButtonColorsDB[MODULES.PLAYER_MANA] then
+if db[addon.MODULES.PLAYER_MANA] then
 	hooksecurefunc("ActionButton_UpdateUsable", updatePlayerButtonUsable)
 end
 
 -- Hook: ActionButton_UpdateRangeIndicator (conditional on config)
-if cfButtonColorsDB[MODULES.PLAYER_RANGE] then
+if db[addon.MODULES.PLAYER_RANGE] then
 	hooksecurefunc("ActionButton_UpdateRangeIndicator", updatePlayerButtonRange)
 end

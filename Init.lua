@@ -1,13 +1,9 @@
--- Lua API
-local pairs = pairs
-local type = type
+-- Create addon namespace
+cfButtonColors = {}
 
--- WoW API
-local UnitClass = UnitClass
-
--- Module Constants
-local addon = cfButtonColors or {}
-cfButtonColors = addon
+-- Localize for performance and consistency
+local db = cfButtonColorsDB
+local addon = cfButtonColors
 
 -- Module-level state
 local _, playerClass = UnitClass("player")
@@ -37,25 +33,26 @@ local dbDefaults = {
 }
 
 -- Database initialization
-if not cfButtonColorsDB then
-	cfButtonColorsDB = {}
+if not db then
+	db = {}
+	cfButtonColorsDB = db
 end
 
 -- Apply defaults for any missing keys (adds new settings in updates)
 for key, value in pairs(dbDefaults) do
-	if cfButtonColorsDB[key] == nil then
+	if db[key] == nil then
 		-- Deep copy for color tables
 		if type(value) == "table" then
-			cfButtonColorsDB[key] = {r = value.r, g = value.g, b = value.b}
+			db[key] = {r = value.r, g = value.g, b = value.b}
 		else
-			cfButtonColorsDB[key] = value
+			db[key] = value
 		end
 	end
 end
 
 -- Remove keys from DB that aren't in defaults (cleanup deprecated settings)
-for key in pairs(cfButtonColorsDB) do
+for key in pairs(db) do
 	if dbDefaults[key] == nil then
-		cfButtonColorsDB[key] = nil
+		db[key] = nil
 	end
 end
