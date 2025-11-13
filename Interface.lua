@@ -1,19 +1,44 @@
--- Settings panel frame
+-- Lua API
+local pairs = pairs
+
+-- WoW API
+local CreateFrame = CreateFrame
+local ReloadUI = ReloadUI
+local ColorPickerFrame = ColorPickerFrame
+local Settings = Settings
+
+-- Module Constants
+local addon = cfButtonColors
+local MODULES = addon.MODULES
+local defaultColors = addon.DEFAULT_COLORS
+
+-- Module-level state
+local pendingState = nil
+local allCheckboxes = {}
+
+-- Initialization code
 local panel = CreateFrame("Frame", "cfButtonColorsPanel")
 panel.name = "cfButtonColors"
 
--- Addon namespace reference
-local addon = cfButtonColors
+local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+title:SetPoint("TOPLEFT", 16, -16)
+title:SetText("cfButtonColors Settings")
 
--- Pending state (created fresh on panel open)
-local pendingState = nil
-
--- Default colors for reset functionality
-local defaultColors = {
-	manaColor = {r = 0.1, g = 0.3, b = 1.0},
-	rangeColor = {r = 1.0, g = 0.3, b = 0.1},
-	unusableColor = {r = 0.4, g = 0.4, b = 0.4},
-}
+-- Functions
+-- Helper function to create reset buttons for color pickers
+local function createResetButton(colorButton, colorKey, xOffset)
+	local resetBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+	resetBtn:SetSize(60, 20)
+	resetBtn:SetPoint("LEFT", colorButton, "RIGHT", xOffset, 0)
+	resetBtn:SetText("Reset")
+	resetBtn:SetScript("OnClick", function()
+		local default = defaultColors[colorKey]
+		pendingState[colorKey] = {r = default.r, g = default.g, b = default.b}
+		cfButtonColorsDB[colorKey] = {r = default.r, g = default.g, b = default.b}
+		colorButton.colorTexture:SetColorTexture(default.r, default.g, default.b)
+	end)
+	return resetBtn
+end
 
 -- Helper function to create color picker buttons
 local function createColorButton(parent, label, colorKey, yOffset)
@@ -66,10 +91,6 @@ local function createColorButton(parent, label, colorKey, yOffset)
 	return button
 end
 
-local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-title:SetPoint("TOPLEFT", 16, -16)
-title:SetText("cfButtonColors Settings")
-
 -- Helper function to create a checkbox
 local function createCheckbox(parent, anchorTo, xOffset, yOffset, moduleName, labelText)
 	local check = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
@@ -81,13 +102,11 @@ local function createCheckbox(parent, anchorTo, xOffset, yOffset, moduleName, la
 	return check
 end
 
--- Store all checkboxes for later initialization
-local allCheckboxes = {}
-
+-- UI Element Creation
 -- Checkboxes
-allCheckboxes.manaCheck = createCheckbox(panel, title, 0, -16, "PlayerMana", "Player Actionbar Mana/Usability (Blue for mana, Grey for unusable)")
-allCheckboxes.rangeCheck = createCheckbox(panel, allCheckboxes.manaCheck, 0, -8, "PlayerRange", "Player Actionbar Range (Red when out of range)")
-allCheckboxes.petCheck = createCheckbox(panel, allCheckboxes.rangeCheck, 0, -8, "Pet", "Pet Actionbar Range/Mana")
+allCheckboxes.manaCheck = createCheckbox(panel, title, 0, -16, MODULES.PLAYER_MANA, "Player Actionbar Mana/Usability (Blue for mana, Grey for unusable)")
+allCheckboxes.rangeCheck = createCheckbox(panel, allCheckboxes.manaCheck, 0, -8, MODULES.PLAYER_RANGE, "Player Actionbar Range (Red when out of range)")
+allCheckboxes.petCheck = createCheckbox(panel, allCheckboxes.rangeCheck, 0, -8, MODULES.PET, "Pet Actionbar Range/Mana")
 
 local petNote = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 petNote:SetPoint("LEFT", allCheckboxes.petCheck.Text, "RIGHT", 8, 0)
@@ -112,52 +131,26 @@ warning:SetText("|cffFF6600Click 'Reload UI' to apply changes|r")
 
 -- Color pickers with individual reset buttons
 local manaColorBtn = createColorButton(panel, "Out of Mana Color", "manaColor", -260)
-
-local resetManaBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-resetManaBtn:SetSize(60, 20)
-resetManaBtn:SetPoint("LEFT", manaColorBtn, "RIGHT", 135, 0)
-resetManaBtn:SetText("Reset")
-resetManaBtn:SetScript("OnClick", function()
-	pendingState.manaColor = {r = defaultColors.manaColor.r, g = defaultColors.manaColor.g, b = defaultColors.manaColor.b}
-	cfButtonColorsDB.manaColor = {r = defaultColors.manaColor.r, g = defaultColors.manaColor.g, b = defaultColors.manaColor.b}
-	manaColorBtn.colorTexture:SetColorTexture(pendingState.manaColor.r, pendingState.manaColor.g, pendingState.manaColor.b)
-end)
+local resetManaBtn = createResetButton(manaColorBtn, "manaColor", 135)
 
 local rangeColorBtn = createColorButton(panel, "Out of Range Color", "rangeColor", -300)
-
-local resetRangeBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-resetRangeBtn:SetSize(60, 20)
-resetRangeBtn:SetPoint("LEFT", rangeColorBtn, "RIGHT", 135, 0)
-resetRangeBtn:SetText("Reset")
-resetRangeBtn:SetScript("OnClick", function()
-	pendingState.rangeColor = {r = defaultColors.rangeColor.r, g = defaultColors.rangeColor.g, b = defaultColors.rangeColor.b}
-	cfButtonColorsDB.rangeColor = {r = defaultColors.rangeColor.r, g = defaultColors.rangeColor.g, b = defaultColors.rangeColor.b}
-	rangeColorBtn.colorTexture:SetColorTexture(pendingState.rangeColor.r, pendingState.rangeColor.g, pendingState.rangeColor.b)
-end)
+local resetRangeBtn = createResetButton(rangeColorBtn, "rangeColor", 135)
 
 local unusableColorBtn = createColorButton(panel, "Unusable Color", "unusableColor", -340)
-
-local resetUnusableBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-resetUnusableBtn:SetSize(60, 20)
-resetUnusableBtn:SetPoint("LEFT", unusableColorBtn, "RIGHT", 135, 0)
-resetUnusableBtn:SetText("Reset")
-resetUnusableBtn:SetScript("OnClick", function()
-	pendingState.unusableColor = {r = defaultColors.unusableColor.r, g = defaultColors.unusableColor.g, b = defaultColors.unusableColor.b}
-	cfButtonColorsDB.unusableColor = {r = defaultColors.unusableColor.r, g = defaultColors.unusableColor.g, b = defaultColors.unusableColor.b}
-	unusableColorBtn.colorTexture:SetColorTexture(pendingState.unusableColor.r, pendingState.unusableColor.g, pendingState.unusableColor.b)
-end)
+local resetUnusableBtn = createResetButton(unusableColorBtn, "unusableColor", 135)
 
 local info = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 info:SetPoint("TOPLEFT", reloadBtn, "BOTTOMLEFT", 4, -8)
 info:SetText("Type |cffFFFF00/cfbc|r to open this panel")
 
+-- Event Handlers / Hooks
 -- Function to initialize checkboxes from database
 local function initializeCheckboxes()
 	-- Copy database to pending state
 	pendingState = {
-		PlayerMana = cfButtonColorsDB.PlayerMana,
-		PlayerRange = cfButtonColorsDB.PlayerRange,
-		Pet = cfButtonColorsDB.Pet,
+		[MODULES.PLAYER_MANA] = cfButtonColorsDB[MODULES.PLAYER_MANA],
+		[MODULES.PLAYER_RANGE] = cfButtonColorsDB[MODULES.PLAYER_RANGE],
+		[MODULES.PET] = cfButtonColorsDB[MODULES.PET],
 		manaColor = {r = cfButtonColorsDB.manaColor.r, g = cfButtonColorsDB.manaColor.g, b = cfButtonColorsDB.manaColor.b},
 		rangeColor = {r = cfButtonColorsDB.rangeColor.r, g = cfButtonColorsDB.rangeColor.g, b = cfButtonColorsDB.rangeColor.b},
 		unusableColor = {r = cfButtonColorsDB.unusableColor.r, g = cfButtonColorsDB.unusableColor.g, b = cfButtonColorsDB.unusableColor.b},
@@ -166,7 +159,7 @@ local function initializeCheckboxes()
 	-- Configure each checkbox
 	for _, check in pairs(allCheckboxes) do
 		-- Special handling for Pet checkbox (class restriction)
-		if check.moduleName == "Pet" and not addon.isPetClass then
+		if check.moduleName == MODULES.PET and not addon.isPetClass then
 			-- Non-pet class: disable checkbox and gray out text
 			check:SetChecked(false)
 			check:Disable()

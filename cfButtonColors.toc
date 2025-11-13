@@ -5,8 +5,15 @@
 ## Version:   1.0
 ## SavedVariables: cfButtonColorsDB
 
-# Core module (load order matters)
+# Infrastructure
+Init.lua
+
+# Core
 cfButtonColors.lua
+
+# UI
+Interface.lua
+
+# Modules
 Player.lua
 Pet.lua
-Interface.lua

@@ -1,27 +1,11 @@
--- Addon namespace
-cfButtonColors = cfButtonColors or {}
-local addon = cfButtonColors
+-- Module Constants
+local addon = cfButtonColors or {}
+cfButtonColors = addon
 
--- Player class detection
-local _, playerClass = UnitClass("player")
-local isPetClass = (playerClass == "HUNTER" or playerClass == "WARLOCK")
-addon.isPetClass = isPetClass
-
--- SavedVariables initialization
-if not cfButtonColorsDB then
-    cfButtonColorsDB = {
-        PlayerMana = true,
-        PlayerRange = true,
-        Pet = isPetClass,
-        manaColor = {r = 0.1, g = 0.3, b = 1.0},
-        rangeColor = {r = 1.0, g = 0.3, b = 0.1},
-        unusableColor = {r = 0.4, g = 0.4, b = 0.4},
-    }
-end
-
--- Button state cache
+-- Module-level state
 local buttonStates = {}
 
+-- Shared Functions
 -- Retrieves or creates a state object for tracking button status
 function addon.getOrCreateState(button)
 	local buttonName = button:GetName()

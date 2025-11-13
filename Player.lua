@@ -1,5 +1,14 @@
-local addon = cfButtonColors
+-- WoW API
+local HasAction = HasAction
+local IsUsableAction = IsUsableAction
+local IsActionInRange = IsActionInRange
+local hooksecurefunc = hooksecurefunc
 
+-- Module Constants
+local addon = cfButtonColors
+local MODULES = addon.MODULES
+
+-- Functions
 -- Updates button color based on mana/usability state
 local function updatePlayerButtonUsable(button)
 	if not button.action then return end
@@ -25,12 +34,13 @@ local function updatePlayerButtonRange(button)
 	addon.applyButtonColor(button.icon, state.isOutOfMana, state.isOutOfRange, state.isUnusable)
 end
 
+-- Event Handlers / Hooks
 -- Hook: ActionButton_UpdateUsable (conditional on config)
-if cfButtonColorsDB.PlayerMana then
+if cfButtonColorsDB[MODULES.PLAYER_MANA] then
 	hooksecurefunc("ActionButton_UpdateUsable", updatePlayerButtonUsable)
 end
 
 -- Hook: ActionButton_UpdateRangeIndicator (conditional on config)
-if cfButtonColorsDB.PlayerRange then
+if cfButtonColorsDB[MODULES.PLAYER_RANGE] then
 	hooksecurefunc("ActionButton_UpdateRangeIndicator", updatePlayerButtonRange)
 end

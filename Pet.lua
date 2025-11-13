@@ -1,12 +1,24 @@
-local addon = cfButtonColors
+-- WoW API
+local PetHasActionBar = PetHasActionBar
+local GetPetActionInfo = GetPetActionInfo
+local C_Spell = C_Spell
+local hooksecurefunc = hooksecurefunc
+local C_Timer = C_Timer
+local UnitExists = UnitExists
+local InCombatLockdown = InCombatLockdown
+local _G = _G
 
--- Module enable checks
-if not addon.isPetClass then return end
-if not cfButtonColorsDB.Pet then return end
-
--- Module constants
+-- WoW Constants
 local NUM_PET_ACTION_SLOTS = NUM_PET_ACTION_SLOTS
 
+-- Module Constants
+local addon = cfButtonColors
+local MODULES = addon.MODULES
+
+-- Initialization code
+if not cfButtonColorsDB[MODULES.PET] then return end
+
+-- Functions
 -- Updates all pet button colors based on mana, range, and usability
 local function updatePetButtons()
 	if not PetHasActionBar() then return end
@@ -25,6 +37,7 @@ local function updatePetButtons()
 	end
 end
 
+-- Event Handlers / Hooks
 -- Hook: PetActionBar_Update and timer
 hooksecurefunc("PetActionBar_Update", updatePetButtons)
 
