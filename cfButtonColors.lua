@@ -1,6 +1,5 @@
 -- Module Constants
-local addon = cfButtonColors or {}
-cfButtonColors = addon
+local addon = cfButtonColors
 
 -- Module-level state
 local buttonStates = {}
