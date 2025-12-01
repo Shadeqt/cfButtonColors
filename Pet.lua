@@ -32,7 +32,7 @@ end
 hooksecurefunc("PetActionBar_Update", updatePetButtons)
 
 C_Timer.NewTicker(0.2, function()
-	if PetHasActionBar() and (UnitExists("target") or InCombatLockdown()) then
+	if PetHasActionBar() and (UnitExists("target") or UnitPower("pet") < UnitPowerMax("pet")) then
 		updatePetButtons()
 	end
 end)
