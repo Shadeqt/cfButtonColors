@@ -4,6 +4,7 @@
 ## Author:    Cowfoot
 ## Version:   2.1
 
+Colors.lua
 PlayerRange.lua
 Pet.lua
 OutdatedRank.lua

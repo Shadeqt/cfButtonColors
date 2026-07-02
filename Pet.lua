@@ -1,11 +1,12 @@
 -- Tint pet action-bar icons: blue when out of mana, red when out of range. Mana wins.
 -- Hunter / Warlock only (the rest have no persistent pet bar in Classic Era).
 
+local _, addon = ...
+
 local _, class = UnitClass("player")
 if class ~= "HUNTER" and class ~= "WARLOCK" then return end
 
-local OOM = { 0.55, 0.65, 1.0 }
-local OOR = { 0.85, 0.5, 0.4 }
+local OOM, OOR = addon.colors.OOM, addon.colors.OOR
 
 local function Update()
     if not PetHasActionBar() then return end

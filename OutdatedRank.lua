@@ -1,12 +1,14 @@
 -- Marks any action button holding a spell that is a lower rank than the highest
 -- rank of that spell you have trained (e.g. Frostbolt R6 slotted while R7 is known)
--- with a Death Knight-red "!" on the left of the button.
+-- with a red "!" on the left of the button.
 --
 -- A trained-rank map is rebuilt from the spellbook on SPELLS_CHANGED (so training a
 -- higher rank lights up an already-slotted lower one). Per-button overlays refresh
 -- via the ActionButton_Update hook (paging/stance swaps, and the initial draw that
 -- populates `buttons`) plus ACTIONBAR_SLOT_CHANGED (drag edits). Before the spellbook
 -- is read the map is empty, so nothing flags until we have real data.
+
+local _, addon = ...
 
 local trainedMax = {}     -- spell name -> highest trained rank number
 local buttons = {}        -- set of action buttons the hook has touched, for re-scans
@@ -71,18 +73,18 @@ local function isOutdated(slot)
     return false
 end
 
-local DK_COLOR = RAID_CLASS_COLORS["DEATHKNIGHT"]
+local MARKER = addon.colors.MARKER
 
 -- The same "!" cfItemColors uses for begins-quest items (the gossip available-quest
--- icon), anchored at the top-left of the button and tinted with the Death Knight
--- class color. Created lazily and reused.
+-- icon), anchored at the top-left of the button and tinted pure red (MARKER).
+-- Created lazily and reused.
 local function ensureOverlay(button)
     if button.cfRankMarker then return button.cfRankMarker end
     local marker = button:CreateTexture(nil, "OVERLAY")
     marker:SetSize(16, 16)
     marker:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
     marker:SetTexture("Interface\\GossipFrame\\AvailableQuestIcon")
-    marker:SetVertexColor(DK_COLOR.r, DK_COLOR.g, DK_COLOR.b)
+    marker:SetVertexColor(MARKER[1], MARKER[2], MARKER[3])
     marker:Hide()
     button.cfRankMarker = marker
     return marker

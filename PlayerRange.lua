@@ -4,7 +4,8 @@
 -- UpdateRangeIndicator (not UpdateUsable), so we must delegate to UpdateUsable
 -- ourselves on the in-range branch to clear our red paint.
 
-local OOR = { 0.85, 0.5, 0.4 }
+local _, addon = ...
+local OOR = addon.colors.OOR
 
 hooksecurefunc("ActionButton_UpdateRangeIndicator", function(button)
     if not button.icon or not button.action or not HasAction(button.action) then return end
